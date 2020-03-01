@@ -1,5 +1,7 @@
 # Introduce
-A simple mock server. Only swagger is currently supported : ) !
+A simple mock server. 
+
+Only swagger is currently supported : ) !
 # Install
 ```powershell
 git clone https://github.com/ainilili/mocker.git
