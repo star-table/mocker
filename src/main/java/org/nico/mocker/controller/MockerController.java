@@ -1,7 +1,7 @@
 package org.nico.mocker.controller;
 
 import org.apache.catalina.servlet4preview.http.HttpServletRequest;
-import org.nico.mocker.Container;
+import org.nico.mocker.ApiContainer;
 import org.nico.mocker.consts.RespCode;
 import org.nico.mocker.model.Api;
 import org.nico.mocker.resp.RespVo;
@@ -25,7 +25,7 @@ public class MockerController {
 	@GetMapping("/apis")
 	public Object apis(){
 		try {
-			return Container.getApiMap().keySet();
+			return ApiContainer.getApiMap().keySet();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return RespVo.failure(RespCode.API_PRASE_ERR);
@@ -45,7 +45,7 @@ public class MockerController {
 			
 			System.out.println(request.getAttribute("requestUrl"));
 			
-			Api api = Container.getApi(String.valueOf(request.getAttribute("requestUrl")));
+			Api api = ApiContainer.getApi(String.valueOf(request.getAttribute("requestUrl")));
 			if(api == null) {
 				return RespVo.failure(RespCode.API_NOT_FOUND);
 			}

@@ -14,7 +14,9 @@ public class Application {
     	if(ArrayUtils.isEmpty(args)) {
     		throw new MockerException("The api document address is not set, example: java -jar mocker.jar http://host:port/docs");
     	}
-    	Container.apiDoc = args[0];
+    	String apiDoc = args[0];
+    	ApiContainer.parseApis(apiDoc);
+    	ApiContainer.autoRefresh(apiDoc);
         SpringApplication.run(Application.class, args);
     }
 }
