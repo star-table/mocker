@@ -35,17 +35,19 @@ public class ApiContainer {
 		return StringUtils.isNotBlank(docsAPi);
 	}
 	
-	public static Api getApi(String api) throws Exception {
+	public static Api getApi(String api, String httpMethod) throws Exception {
 		Map<String, Api> apiMap = getApiMap();
 		if(! CollectionUtils.isEmpty(apiMap)) {
-			return apiMap.get(api);
+			return apiMap.get(api + ":" + httpMethod.toUpperCase());
 		}
 		return null;
 	}
 	
 	public static Map<String, Api> getApiMap() throws Exception {
 		List<Api> apis = getApis();
-		return MapUtils.toMap(Api::getPath, apis);
+		return MapUtils.toMap(api -> {
+			return api.getPath() + ":" + api.getMethod().toString();
+		}, apis);
 	}
 	
 	public static List<Api> getApis() throws Exception{

@@ -1,5 +1,8 @@
 package org.nico.mocker.controller;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.servlet4preview.http.HttpServletRequest;
@@ -29,7 +32,9 @@ public class MockerController {
 	@GetMapping("/apis")
 	public Object apis(){
 		try {
-			return ApiContainer.getApiMap().keySet();
+			return ApiContainer.getApis().stream().map(api -> {
+				return api.getMethod() + " " + api.getPath();
+			}).collect(Collectors.toSet());
 		} catch (Exception e) {
 			e.printStackTrace();
 			return RespVo.failure(RespCode.API_PRASE_ERR);
@@ -49,10 +54,11 @@ public class MockerController {
 			HttpContextUtils.setDateFormat(dateFormat);
 			
 			String apiPath = String.valueOf(request.getAttribute("requestUrl"));
+			String httpMethod = String.valueOf(request.getAttribute("httpMethod"));
 			if(DataContainer.isEnable() && StringUtils.isNotBlank(version)) {
 				return DataContainer.getMockData(apiPath, version);
 			}else {
-				Api api = ApiContainer.getApi(apiPath);
+				Api api = ApiContainer.getApi(apiPath, httpMethod);
 				if(api == null) {
 					return RespVo.failure(RespCode.API_NOT_FOUND);
 				}

@@ -26,11 +26,13 @@ public class MockerFilter implements Filter{
 			throws IOException, ServletException {
 		HttpServletRequest httpRequest = (HttpServletRequest) request;
 		String requestUrl = httpRequest.getRequestURI();
+		String httpMethod = httpRequest.getMethod();
 		
 		if("/m/apis".equalsIgnoreCase(requestUrl)) {
 			chain.doFilter(httpRequest, response);
 		}else {
 			httpRequest.setAttribute("requestUrl", requestUrl);
+			httpRequest.setAttribute("httpMethod", httpMethod);
 			httpRequest.getRequestDispatcher("/m/mock").forward(request,response);
 		}
 	}
