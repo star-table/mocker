@@ -22,12 +22,14 @@ import org.nico.mocker.utils.HttpUtils;
 import org.nico.mocker.utils.MapUtils;
 import org.springframework.util.CollectionUtils;
 
-import com.alibaba.fastjson.JSON;
+import com.google.gson.Gson;
 
 
 public class SwaggerPluginHandler implements AbstractPluginHandler{
 
 	private static final String SWAGGER_DEFINITION_PREFIX = "#/definitions/";
+	
+	private static final String SWAGGER_RESPONSE_PREFIX = "#/responses/";
 	
 	@Override
 	public List<Api> extract(Plugin plugin) throws MockerException, IOException{
@@ -45,7 +47,8 @@ public class SwaggerPluginHandler implements AbstractPluginHandler{
 		}
 		List<Api> apis = new ArrayList<Api>();
 		
-		SwaggerApi swaggerApi = JSON.parseObject(docs, SwaggerApi.class);
+		Gson gson = new Gson();
+		SwaggerApi swaggerApi = gson.fromJson(docs, SwaggerApi.class);
 		if(! CollectionUtils.isEmpty(swaggerApi.getPaths())) {
 			
 			Map<String, SwaggerObject> definitions = swaggerApi.getDefinitions();
@@ -54,6 +57,10 @@ public class SwaggerPluginHandler implements AbstractPluginHandler{
 			Map<String, ApiParameter> apiParmeterMap = MapUtils.toMap(parameter -> {
 				return SWAGGER_DEFINITION_PREFIX + parameter.getName();
 			}, apiParameters);
+			
+			apiParmeterMap.forEach((k, v) -> {
+				System.out.println(k);
+			});
 			
 			assemblyApiParameterFields(apiParmeterMap, definitions);
 			
@@ -137,6 +144,9 @@ public class SwaggerPluginHandler implements AbstractPluginHandler{
 	}
 	
 	private ApiParameter assemblyApiReponse(SwaggerResponse response, Map<String, ApiParameter> apiParmeterMap) {
+		if(response.getSchema() == null && StringUtils.isNotBlank(response.getRef())) {
+			response.setSchema(new SwaggerSchema(response.getRef()));
+		}
 		return assemblySwaggerSchema(response.getSchema(), apiParmeterMap);
 	}
 
@@ -180,12 +190,11 @@ public class SwaggerPluginHandler implements AbstractPluginHandler{
 			type = "object";
 		}
 		ApiParameter field = new ApiParameter();
-		field.setRequired(property.isRequired());
 		field.setDescription(property.getDescription());
 		switch (type) {
 		case "object": 
 			if(StringUtils.isNotBlank(property.getRef())){
-				field = apiParmeterMap.get(property.getRef());
+				field = apiParmeterMap.get(responsesToDefinitions(property.getRef()));
 			}else if(property.getAdditionalProperties() != null) {
 				field.setExtra(assemblySwaggerSchema(property.getAdditionalProperties(), apiParmeterMap));
 				field.setType(ApiParameterType.MAP);
@@ -219,7 +228,7 @@ public class SwaggerPluginHandler implements AbstractPluginHandler{
 		switch (type) {
 		case "object": 
 			if(StringUtils.isNotBlank(schema.getRef())) {
-				field = apiParmeterMap.get(schema.getRef());
+				field = apiParmeterMap.get(responsesToDefinitions(schema.getRef()));
 			}else if(schema.getAdditionalProperties() != null){
 				field.setType(ApiParameterType.MAP);
 				field.setExtra(assemblySwaggerSchema(schema.getAdditionalProperties(), apiParmeterMap));
@@ -252,6 +261,13 @@ public class SwaggerPluginHandler implements AbstractPluginHandler{
 		default:
 			throw new MockerException("Not support swagger plugin path type: " + plugin.getPathType());
 		}
+	}
+	
+	private String responsesToDefinitions(String ref) {
+		if(StringUtils.isBlank(ref)) {
+			return ref;
+		}
+		return ref.replaceAll(SWAGGER_RESPONSE_PREFIX, SWAGGER_DEFINITION_PREFIX);
 	}
 
 }

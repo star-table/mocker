@@ -18,6 +18,8 @@ public enum HttpMethod {
 	
 	TRACE,
 	
+	PATCH
+	
 	;
 	
 	public static HttpMethod parse(String m) {

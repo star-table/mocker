@@ -1,8 +1,10 @@
 package org.nico.mocker.plugins.swagger;
 
+import java.util.List;
 import java.util.Map;
 
 import com.alibaba.fastjson.annotation.JSONField;
+import com.google.gson.annotations.SerializedName;
 
 import lombok.Data;
 
@@ -25,9 +27,10 @@ public class SwaggerObject {
 	
 	private String originalRef;
 	
-	private boolean required;
+	private List<String> required;
 	
 	@JSONField(name = "$ref")
+	@SerializedName("$ref")
 	private String ref;
 	
 }
