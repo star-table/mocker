@@ -46,7 +46,6 @@ public class SwaggerPluginHandler implements AbstractPluginHandler{
 		List<Api> apis = new ArrayList<Api>();
 		
 		SwaggerApi swaggerApi = JSON.parseObject(docs, SwaggerApi.class);
-
 		if(! CollectionUtils.isEmpty(swaggerApi.getPaths())) {
 			
 			Map<String, SwaggerObject> definitions = swaggerApi.getDefinitions();

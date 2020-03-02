@@ -1,8 +1,12 @@
 package org.nico.mocker.controller;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.catalina.servlet4preview.http.HttpServletRequest;
-import org.nico.mocker.ApiContainer;
+import org.apache.commons.lang3.StringUtils;
 import org.nico.mocker.consts.RespCode;
+import org.nico.mocker.container.ApiContainer;
+import org.nico.mocker.container.DataContainer;
 import org.nico.mocker.model.Api;
 import org.nico.mocker.resp.RespVo;
 import org.nico.mocker.service.MockerService;
@@ -32,24 +36,28 @@ public class MockerController {
 		}
 	}
 	
-	@RequestMapping("/mock")
+	@RequestMapping(value = "/mock", produces = "application/json;charset=utf-8")
 	public Object handle(
 			@RequestParam(name = "_listSize", required = false) Integer listSize,
 			@RequestParam(name = "_mapSize", required = false) Integer mapSize,
 			@RequestParam(name = "_dateFormat", required = false) String dateFormat,
+			@RequestParam(name = "_version", required = false) String version,
 			HttpServletRequest request) {
 		try {
 			HttpContextUtils.setListSize(listSize);
 			HttpContextUtils.setMapSize(mapSize);
 			HttpContextUtils.setDateFormat(dateFormat);
 			
-			System.out.println(request.getAttribute("requestUrl"));
-			
-			Api api = ApiContainer.getApi(String.valueOf(request.getAttribute("requestUrl")));
-			if(api == null) {
-				return RespVo.failure(RespCode.API_NOT_FOUND);
+			String apiPath = String.valueOf(request.getAttribute("requestUrl"));
+			if(DataContainer.isEnable() && StringUtils.isNotBlank(version)) {
+				return DataContainer.getMockData(apiPath, version);
+			}else {
+				Api api = ApiContainer.getApi(apiPath);
+				if(api == null) {
+					return RespVo.failure(RespCode.API_NOT_FOUND);
+				}
+				return mockerService.rendering(api);
 			}
-			return mockerService.rendering(api);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return RespVo.failure(RespCode.API_PRASE_ERR);

@@ -2,6 +2,7 @@ package org.nico.mocker.plugins.tests;
 
 import org.junit.Test;
 
+
 public class SwaggerPluginHandlerTests {
 
 	@Test
