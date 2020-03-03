@@ -26,14 +26,14 @@ public class MockerService {
 		for(String httpCode: sucHttpCodes) {
 			ApiParameter sucResponse = api.getResponses().get(httpCode);
 			if(sucResponse != null) {
-				Map<String, Integer> parameterCycleRecorder = new HashMap<>();
-				return mock(sucResponse, parameterCycleRecorder);
+				Map<String, Integer> cycleRecords = new HashMap<>();
+				return mock(sucResponse, cycleRecords);
 			}	
 		}
 		return null;
 	}
 	
-	private Object mock(ApiParameter parameter, Map<String, Integer> parameterCycleRecorder) {
+	private Object mock(ApiParameter parameter, Map<String, Integer> cycleRecords) {
 		switch (parameter.getType()) {
 		case MAP:
 			Map<String, Object> data = new HashMap<String, Object>();
@@ -43,13 +43,13 @@ public class MockerService {
 				value = ApiParameter.RANDOM;
 			}
 			for(int i = 0; i < HttpContextUtils.getMapSize(); i ++) {
-				data.put(random.randomKey() + i, mock(value, parameterCycleRecorder));
+				data.put(random.randomKey() + i, mock(value, cycleRecords));
 			}
 			return data;
 		case ARRAY:
 			List<Object> list = new ArrayList<Object>();
 			for(int i = 0; i < HttpContextUtils.getListSize(); i ++) {
-				list.add(mock(parameter.getExtra(), parameterCycleRecorder));
+				list.add(mock(parameter.getExtra(), cycleRecords));
 			}
 			return list;
 		case STRING:
@@ -67,25 +67,25 @@ public class MockerService {
 		case OBJECT:
 			if(! CollectionUtils.isEmpty(parameter.getFields())) {
 				data = new HashMap<String, Object>();
-				if(cycleRecord(parameterCycleRecorder, parameter.getName())) {
+				if(cycleRecord(cycleRecords, parameter.getName())) {
 					parameter.getFields().forEach((k, v) -> {
-						data.put(k, mock(v, parameterCycleRecorder));
+						data.put(k, mock(v, cycleRecords));
 					});
 				}
-				cycleCancelRecord(parameterCycleRecorder, parameter.getName());
+				cycleCancelRecord(cycleRecords, parameter.getName());
 				return data;
 			}else {
-				return mock(new ApiParameter(ApiParameterType.MAP), parameterCycleRecorder);
+				return mock(new ApiParameter(ApiParameterType.MAP), cycleRecords);
 			}
 		case RANDOM:
 			return random.random();
 		default:
-			return mock(ApiParameter.RANDOM, parameterCycleRecorder);
+			return mock(ApiParameter.RANDOM, cycleRecords);
 		}
 	}
 	
-	private boolean cycleRecord(Map<String, Integer> parameterCycleRecorder, String name) {
-		Integer time = parameterCycleRecorder.get(name);
+	private boolean cycleRecord(Map<String, Integer> cycleRecords, String name) {
+		Integer time = cycleRecords.get(name);
 		if(time == null) {
 			time = 0;
 		}
@@ -94,15 +94,15 @@ public class MockerService {
 		}
 		
 		time ++;
-		parameterCycleRecorder.put(name, time);
+		cycleRecords.put(name, time);
 		return true;
 	}
 	
-	private void cycleCancelRecord(Map<String, Integer> parameterCycleRecorder, String name) {
-		Integer time = parameterCycleRecorder.get(name);
+	private void cycleCancelRecord(Map<String, Integer> cycleRecords, String name) {
+		Integer time = cycleRecords.get(name);
 		if(time != null && time > 0) {
 			time --;
-			parameterCycleRecorder.put(name, time);
+			cycleRecords.put(name, time);
 		}
 	}
 }
