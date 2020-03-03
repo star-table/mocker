@@ -24,6 +24,14 @@ public class HttpContextUtils {
 		getContext().setMapSize(mapSize);
 	}
 	
+	public static Integer getCycleSize() {
+		return getContext().getCycleSize();
+	}
+
+	public static void setCycleSize(Integer cycleSize) {
+		getContext().setCycleSize(cycleSize);
+	}
+	
 	public static String getDateFormat() {
 		return getContext().getDateFormat();
 	}
@@ -50,6 +58,8 @@ public class HttpContextUtils {
     	private Integer listSize;
     	
     	private Integer mapSize;
+    	
+    	private Integer cycleSize;
     	
     	private String dateFormat;
 
@@ -84,6 +94,17 @@ public class HttpContextUtils {
 
 		public void setDateFormat(String dateFormat) {
 			this.dateFormat = dateFormat;
+		}
+
+		public Integer getCycleSize() {
+			if(cycleSize == null) {
+				cycleSize = 2;
+			}
+			return cycleSize;
+		}
+
+		public void setCycleSize(Integer cycleSize) {
+			this.cycleSize = cycleSize;
 		}
 
     }

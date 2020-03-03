@@ -42,6 +42,7 @@ public class MockerController {
 	public Object handle(
 			@RequestParam(name = "_listSize", required = false) Integer listSize,
 			@RequestParam(name = "_mapSize", required = false) Integer mapSize,
+			@RequestParam(name = "_cycleSize", required = false) Integer cycleSize,
 			@RequestParam(name = "_dateFormat", required = false) String dateFormat,
 			@RequestParam(name = "_version", required = false) String version,
 			HttpServletRequest request) {
@@ -49,6 +50,7 @@ public class MockerController {
 			HttpContextUtils.setListSize(listSize);
 			HttpContextUtils.setMapSize(mapSize);
 			HttpContextUtils.setDateFormat(dateFormat);
+			HttpContextUtils.setCycleSize(cycleSize);
 			
 			String apiPath = String.valueOf(request.getAttribute("requestUrl"));
 			String httpMethod = String.valueOf(request.getAttribute("httpMethod"));

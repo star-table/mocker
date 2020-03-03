@@ -21,8 +21,9 @@ curl http://127.0.0.1:10088/m/apis
 ```
 ## Do request
 Optional parameters:
- - **_listSize**:  list size, default 20.
- - **_mapSize**:  map size, default 20.
+ - **_listSize**:  list size, default random within 20.
+ - **_mapSize**:  map size, default random within 20.
+ - **_cycleSize**:  cycle depth size, default 2.
  - **_dateFormat**:  date format, default 'yyyy-MM-dd HH:mm:ss'. If you want a timestamp, please enter 'timestamp'.
  - **_version**: mock data version.
 
