@@ -52,16 +52,20 @@ public class SwaggerPluginHandler implements AbstractPluginHandler{
 		if(! CollectionUtils.isEmpty(swaggerApi.getPaths())) {
 			
 			Map<String, SwaggerObject> definitions = swaggerApi.getDefinitions();
+			Map<String, SwaggerResponse> responses = swaggerApi.getResponses();
 			
-			List<ApiParameter> apiParameters = assemblyApiParameters(definitions);
+			List<ApiParameter> apiParameters = assemblyDefinitions(definitions);
 			Map<String, ApiParameter> apiParmeterMap = MapUtils.toMap(parameter -> {
 				return SWAGGER_DEFINITION_PREFIX + parameter.getName();
 			}, apiParameters);
 			
-			apiParmeterMap.forEach((k, v) -> {
-				System.out.println(k);
-			});
+			List<ApiParameter> apiReponses = assemblyResponses(responses, apiParmeterMap);
+			Map<String, ApiParameter> responsesMap = MapUtils.toMap(parameter -> {
+				return SWAGGER_RESPONSE_PREFIX + parameter.getName();
+			}, apiReponses);
 			
+			//merge
+			apiParmeterMap.putAll(responsesMap);
 			assemblyApiParameterFields(apiParmeterMap, definitions);
 			
 			swaggerApi.getPaths().forEach((url, paths) -> {
@@ -76,11 +80,11 @@ public class SwaggerPluginHandler implements AbstractPluginHandler{
 						api.setFormParameters(assemblyFormParameters(path, definitions, apiParmeterMap));
 						
 						if(! CollectionUtils.isEmpty(path.getResponses())) {
-							Map<String, ApiParameter> responses = new HashMap<String, ApiParameter>();
+							Map<String, ApiParameter> pathResponses = new HashMap<String, ApiParameter>();
 							path.getResponses().forEach((code, response) -> {
-								responses.put(code, assemblyApiReponse(response, apiParmeterMap));
+								pathResponses.put(code, assemblyApiReponse(response, apiParmeterMap));
 							});
-							api.setResponses(responses);
+							api.setResponses(pathResponses);
 						}
 						apis.add(api);
 					});
@@ -144,15 +148,13 @@ public class SwaggerPluginHandler implements AbstractPluginHandler{
 	}
 	
 	private ApiParameter assemblyApiReponse(SwaggerResponse response, Map<String, ApiParameter> apiParmeterMap) {
-		if(response.getSchema() == null && StringUtils.isNotBlank(response.getRef())) {
-			response.setSchema(new SwaggerSchema(response.getRef()));
-		}
+		handleResponse(response);
 		return assemblySwaggerSchema(response.getSchema(), apiParmeterMap);
 	}
 
-	private List<ApiParameter> assemblyApiParameters(Map<String, SwaggerObject> definitions){
+	private List<ApiParameter> assemblyDefinitions(Map<String, SwaggerObject> definitions){
+		List<ApiParameter> apiParameters = new ArrayList<ApiParameter>();
 		if(! CollectionUtils.isEmpty(definitions)) {
-			List<ApiParameter> apiParameters = new ArrayList<ApiParameter>();
 			definitions.forEach((name, info) -> {
 				ApiParameter apiParameter = new ApiParameter();
 				apiParameter.setName(name);
@@ -160,9 +162,23 @@ public class SwaggerPluginHandler implements AbstractPluginHandler{
 				apiParameter.setType(ApiParameterType.get(info.getType()));
 				apiParameters.add(apiParameter);
 			});
-			return apiParameters;
 		}
-		return null;
+		return apiParameters;
+	}
+	
+	private List<ApiParameter> assemblyResponses(Map<String, SwaggerResponse> responses, Map<String, ApiParameter> apiParmeterMap){
+		List<ApiParameter> apiParameters = new ArrayList<ApiParameter>();
+		if(! CollectionUtils.isEmpty(responses)) {
+			responses.forEach((name, response) -> {
+				handleResponse(response);
+				ApiParameter responseParameter = assemblySwaggerSchema(response.getSchema(), apiParmeterMap);
+				if(responseParameter != null) {
+					responseParameter.setName(name);
+					apiParameters.add(responseParameter);
+				}
+			});
+		}
+		return apiParameters;
 	}
 
 	private List<ApiParameter> assemblyApiParameterFields(Map<String, ApiParameter> apiParmeterMap, Map<String, SwaggerObject> definitions){
@@ -194,7 +210,10 @@ public class SwaggerPluginHandler implements AbstractPluginHandler{
 		switch (type) {
 		case "object": 
 			if(StringUtils.isNotBlank(property.getRef())){
-				field = apiParmeterMap.get(responsesToDefinitions(property.getRef()));
+				field = apiParmeterMap.get(property.getRef());
+				if(field == null) {
+					System.out.println(1);
+				}
 			}else if(property.getAdditionalProperties() != null) {
 				field.setExtra(assemblySwaggerSchema(property.getAdditionalProperties(), apiParmeterMap));
 				field.setType(ApiParameterType.MAP);
@@ -228,7 +247,7 @@ public class SwaggerPluginHandler implements AbstractPluginHandler{
 		switch (type) {
 		case "object": 
 			if(StringUtils.isNotBlank(schema.getRef())) {
-				field = apiParmeterMap.get(responsesToDefinitions(schema.getRef()));
+				field = apiParmeterMap.get(schema.getRef());
 			}else if(schema.getAdditionalProperties() != null){
 				field.setType(ApiParameterType.MAP);
 				field.setExtra(assemblySwaggerSchema(schema.getAdditionalProperties(), apiParmeterMap));
@@ -263,11 +282,13 @@ public class SwaggerPluginHandler implements AbstractPluginHandler{
 		}
 	}
 	
-	private String responsesToDefinitions(String ref) {
-		if(StringUtils.isBlank(ref)) {
-			return ref;
+	private void handleResponse(SwaggerResponse response) {
+		if(response.getSchema() == null && StringUtils.isNotBlank(response.getRef())) {
+			response.setSchema(new SwaggerSchema(response.getRef()));
 		}
-		return ref.replaceAll(SWAGGER_RESPONSE_PREFIX, SWAGGER_DEFINITION_PREFIX);
+		if(response.getSchema() != null && StringUtils.isBlank(response.getRef())) {
+			response.setRef(response.getSchema().getRef());
+		}
 	}
-
+	
 }

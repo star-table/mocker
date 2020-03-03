@@ -20,4 +20,6 @@ public class SwaggerApi {
 	
 	private Map<String, SwaggerObject> definitions;
 	
+	private Map<String, SwaggerResponse> responses;
+	
 }

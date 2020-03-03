@@ -1,20 +1,15 @@
 package org.nico.mocker.plugins.swagger;
 
-import com.alibaba.fastjson.annotation.JSONField;
-import com.google.gson.annotations.SerializedName;
-
-import lombok.Data;
-
-@Data
-public class SwaggerResponse {
-
-	private String in;
+public class SwaggerResponse extends SwaggerSchema{
 	
-	private String description;
+	protected SwaggerSchema schema;
+
+	public SwaggerSchema getSchema() {
+		return schema;
+	}
+
+	public void setSchema(SwaggerSchema schema) {
+		this.schema = schema;
+	}
 	
-	private SwaggerSchema schema;
-	
-	@JSONField(name = "$ref")
-	@SerializedName("$ref")
-	private String ref;
 }

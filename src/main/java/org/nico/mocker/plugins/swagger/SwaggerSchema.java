@@ -8,17 +8,17 @@ import lombok.Data;
 @Data
 public class SwaggerSchema {
 
-	private String originalRef;
+	protected String originalRef;
 	
 	@JSONField(name = "$ref")
 	@SerializedName("$ref")
-	private String ref;
+	protected String ref;
 	
-	private String type;
+	protected String type;
 	
-	private SwaggerSchema additionalProperties;
+	protected SwaggerSchema additionalProperties;
 	
-	private SwaggerSchema items;
+	protected SwaggerSchema items;
 
 	public SwaggerSchema(String ref) {
 		this.ref = ref;

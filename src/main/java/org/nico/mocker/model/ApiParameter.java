@@ -15,6 +15,8 @@ public class ApiParameter {
 	
 	private String name;
 	
+	private String alias;
+	
 	private String description;
 	
 	private boolean required;
