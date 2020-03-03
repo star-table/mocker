@@ -2,7 +2,6 @@ package org.nico.mocker.container;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.nico.mocker.enums.PluginPathType;
@@ -10,10 +9,11 @@ import org.nico.mocker.model.Api;
 import org.nico.mocker.plugins.AbstractPluginHandler;
 import org.nico.mocker.plugins.swagger.SwaggerPlugin;
 import org.nico.mocker.plugins.swagger.SwaggerPluginHandler;
-import org.nico.mocker.utils.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.PathMatcher;
 
 public class ApiContainer {
 
@@ -25,6 +25,8 @@ public class ApiContainer {
 	
 	private static AbstractPluginHandler handler = new SwaggerPluginHandler();
 	
+	private static PathMatcher antMatcher = new AntPathMatcher();
+	
 	public static String enable(String docsAPi) {
 		ApiContainer.docsAPi = docsAPi;
 		log.info("Docs api {}", docsAPi);
@@ -35,19 +37,16 @@ public class ApiContainer {
 		return StringUtils.isNotBlank(docsAPi);
 	}
 	
-	public static Api getApi(String api, String httpMethod) throws Exception {
-		Map<String, Api> apiMap = getApiMap();
-		if(! CollectionUtils.isEmpty(apiMap)) {
-			return apiMap.get(api + ":" + httpMethod.toUpperCase());
+	public static Api getApi(String apiPath, String httpMethod) throws Exception {
+		List<Api> apis = getApis();
+		if(! CollectionUtils.isEmpty(apis)) {
+			for(Api api: apis) {
+				if(api.getMethod().toString().equalsIgnoreCase(httpMethod) && antMatcher.match(api.getPath(), apiPath)) {
+					return api;
+				}
+			};
 		}
 		return null;
-	}
-	
-	public static Map<String, Api> getApiMap() throws Exception {
-		List<Api> apis = getApis();
-		return MapUtils.toMap(api -> {
-			return api.getPath() + ":" + api.getMethod().toString();
-		}, apis);
 	}
 	
 	public static List<Api> getApis() throws Exception{
