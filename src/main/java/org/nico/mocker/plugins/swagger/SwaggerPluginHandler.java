@@ -205,6 +205,9 @@ public class SwaggerPluginHandler implements AbstractPluginHandler{
 		if(StringUtils.isEmpty(type)) {
 			type = "object";
 		}
+		if("date-time".equals(property.getFormat())) {
+			type = "date";
+		}
 		ApiParameter field = new ApiParameter();
 		field.setDescription(property.getDescription());
 		switch (type) {
