@@ -65,7 +65,7 @@ public class HttpContextUtils {
 
 		public Integer getListSize() {
 			if(listSize == null) {
-				listSize = random.nextInt(20);
+				listSize = random.nextInt(10);
 			}
 			return listSize;
 		}
@@ -76,7 +76,7 @@ public class HttpContextUtils {
 
 		public Integer getMapSize() {
 			if(mapSize == null) {
-				mapSize = random.nextInt(20);
+				mapSize = random.nextInt(5);
 			}
 			return mapSize;
 		}
@@ -98,7 +98,7 @@ public class HttpContextUtils {
 
 		public Integer getCycleSize() {
 			if(cycleSize == null) {
-				cycleSize = 2;
+				cycleSize = 1;
 			}
 			return cycleSize;
 		}

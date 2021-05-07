@@ -59,7 +59,8 @@ public class SmartRandom implements AbstractRandom{
 
 	@Override
 	public Object randomDate() {
-		Date date = new Date(1583079322000L + random.nextInt((int)(new Date().getTime() - 1583079322000l)));
+		int diff = (int)(System.currentTimeMillis() - 1583079322000L);
+		Date date = new Date(1583079322000L + random.nextInt(diff > 0 ? diff : 100000000));
 		if("timestamp".equalsIgnoreCase(HttpContextUtils.getDateFormat())) {
 			return date.getTime();
 		}

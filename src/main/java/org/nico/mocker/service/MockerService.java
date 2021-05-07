@@ -71,8 +71,8 @@ public class MockerService {
 					parameter.getFields().forEach((k, v) -> {
 						data.put(k, mock(v, cycleRecords));
 					});
+					cycleCancelRecord(cycleRecords, parameter.getName());
 				}
-				cycleCancelRecord(cycleRecords, parameter.getName());
 				return data;
 			}else {
 				return mock(new ApiParameter(ApiParameterType.MAP), cycleRecords);
