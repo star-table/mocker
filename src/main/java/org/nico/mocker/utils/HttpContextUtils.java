@@ -98,7 +98,7 @@ public class HttpContextUtils {
 
 		public Integer getCycleSize() {
 			if(cycleSize == null) {
-				cycleSize = 2;
+				cycleSize = 1;
 			}
 			return cycleSize;
 		}
